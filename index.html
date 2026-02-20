@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حقيبة القدرات (إكمال الجمل 4) - أ/ عبدالعزيز الفيفي</title>
+    <style>
+        :root { 
+            --primary: #1a237e; --secondary: #37474f; --accent: #ffab00; 
+            --bg: #f4f7f6; --white: #ffffff; --correct: #2e7d32; --wrong: #c62828;
+        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; line-height: 1.7; color: #333; }
+        .quiz-card { background: var(--white); width: 100%; max-width: 950px; border-radius: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); border-top: 15px solid var(--primary); padding: 30px; position: relative; }
+        .header { text-align: center; border-bottom: 2px solid #eee; margin-bottom: 25px; padding-bottom: 15px; }
+        
+        .info-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; position: sticky; top: 10px; z-index: 1000; }
+        .student-badge { background: #e8eaf6; color: var(--primary); padding: 10px 20px; border-radius: 50px; font-weight: bold; border: 2px solid var(--primary); font-size: 1rem; }
+        
+        .timer-container { background: var(--secondary); color: white; padding: 10px 25px; border-radius: 50px; font-weight: bold; font-size: 1.1rem; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .timer-pulse { background: var(--wrong) !important; animation: pulse-animation 0.6s infinite alternate; transform: scale(1.1); }
+        @keyframes pulse-animation { from { transform: scale(1.1); } to { transform: scale(1.25); } }
+        
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
+        .option { padding: 18px; border: 2px solid #f0f0f0; border-radius: 15px; cursor: pointer; transition: 0.3s; font-weight: bold; background: #fafafa; font-size: 1.1rem; text-align: center; }
+        .option:hover { border-color: var(--primary); background: #fdf7ff; transform: translateY(-2px); }
+        .correct-opt { background: var(--correct) !important; color: white; border-color: var(--correct) !important; }
+        .wrong-opt { background: var(--wrong) !important; color: white; border-color: var(--wrong) !important; }
+        
+        .feedback-box { margin-top: 20px; padding: 25px; border-radius: 15px; background: #fffde7; border-right: 10px solid var(--accent); display: none; font-size: 1.1rem; }
+        .btn { background: var(--secondary); color: white; padding: 16px 45px; border: none; border-radius: 12px; cursor: pointer; font-size: 1.2rem; font-weight: bold; transition: 0.3s; }
+        .btn:hover { background: var(--primary); }
+
+        .result-table { width: 100%; border-collapse: collapse; margin-top: 25px; background: white; }
+        .result-table th { background: var(--primary); color: white; padding: 12px; }
+        .result-table td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+        
+        .hidden { display: none; }
+        .locked { text-align: center; color: red; padding: 50px; border: 5px solid red; border-radius: 20px; background: white; }
+    </style>
+</head>
+<body id="main-body">
+
+<div class="quiz-card" id="quiz-container">
+    <div class="header">
+        <h3 id="author-name">✨ أ / عبدالعزيز الفيفي - ثانوية الأمير عبدالمجيد 🎓</h3>
+        <h2 id="quiz-title">إكمال الجمل - النموذج الماسي (4)</h2>
+    </div>
+
+    <div id="start-page" style="text-align: center;">
+        <p style="font-size: 1.2rem; margin-bottom: 20px;">⏱️ 45 ثانية | 🔀 خلط عشوائي كامل | 💡 </p>
+        <input type="text" id="studentNameInput" placeholder="أدخل اسمك الثلاثي لبدء التحدي..." style="width: 75%; padding: 15px; border-radius: 10px; border: 2px solid #ccc; text-align: center; font-size: 1.1rem; margin-bottom: 20px;">
+        <br><button class="btn" onclick="startQuizAction()">ابدأ الاختبار 🚀</button>
+    </div>
+
+    <div id="quiz-page" class="hidden">
+        <div class="info-bar">
+            <div id="current-student-display" class="student-badge"></div>
+            <div id="timer-box" class="timer-container">⏳ المتبقي: <span id="timer-val">45</span> ثانية</div>
+        </div>
+        <div id="progress-text" style="font-weight: bold; color: var(--primary); margin-bottom: 10px;"></div>
+        <div id="question-display" style="font-size: 1.5rem; text-align: right; margin: 25px 0; font-weight: 800; color: #333; background: #f9f9f9; padding: 30px; border-radius: 20px; border: 1px solid #eee;"></div>
+        <div id="options-container" class="options-grid"></div>
+        <div id="feedback-display" class="feedback-box"></div>
+        <div style="text-align: center; margin-top: 30px;">
+            <button id="next-btn" class="btn hidden" onclick="loadNextQuestion()">السؤال التالي ⮕</button>
+        </div>
+    </div>
+
+    <div id="result-page" class="hidden">
+        <div style="text-align: center; padding: 30px; background: #e8eaf6; border-radius: 20px; border: 3px solid var(--primary); margin-bottom: 30px;">
+            <h1 id="score-display" style="color: var(--primary); margin:0; font-size: 3rem;"></h1>
+            <h2 id="final-student-name" style="color: var(--secondary); margin-top: 15px;"></h2>
+        </div>
+        <table class="result-table">
+            <thead>
+                <tr>
+                    <th>السؤال</th>
+                    <th>إجابتك</th>
+                    <th>الصحيحة</th>
+                </tr>
+            </thead>
+            <tbody id="summary-body"></tbody>
+        </table>
+        <div style="text-align: center; margin-top: 40px;">
+            <p style="font-weight: bold; color: var(--primary);">✨ أ / عبد العزيز الفيفي - ثانوية الأمير عبدالمجيد 🎓</p>
+            <button class="btn" onclick="location.reload()">إعادة الاختبار 🔀</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function protect() {
+        const teacher = "عبدالعزيز الفيفي";
+        setInterval(() => {
+            const auth = document.getElementById('author-name');
+            if (!auth || !auth.innerText.includes(teacher)) {
+                document.getElementById('main-body').innerHTML = '<div class="locked"><h1>⚠️ خرق حماية الملكية</h1><p>هذا العمل ملك للأستاذ عبدالعزيز الفيفي.</p></div>';
+            }
+        }, 3000);
+    })();
+
+    const masterPool = [
+        { question: "1. يُعد .......... من أقوى .......... التغيير في العصر الحديث.", options: ["الإعلام - وسائل", "التعليم - طرق", "السفر - سبل", "المال - دوافع"], answer: "الإعلام - وسائل" },
+        { question: "2. إن الشاب الذي لا يقتنع بالقليل من .......... ولا يعرف .......... عند الفشل لجدير بالاحترام.", options: ["ب- العلم - اليأس", "أ- العمل - الخوف", "ج- المال - الكسل", "د- الفكر - التراجع"], answer: "ب- العلم - اليأس" },
+        { question: "3. من كثر .......... قل ..........", options: ["مزاحه - وقاره", "كلامه - احترامه", "ماله - تواضعه", "علمه - جهله"], answer: "مزاحه - وقاره" },
+        { question: "4. يجب علينا الاعتماد على .......... عند أداء الواجبات، وليس على .......... الخارجي.", options: ["النفس - الدعم", "العقل - التفكير", "الجهد - العمل", "الذات - المال"], answer: "النفس - الدعم" },
+        { question: "5. لا تجعل عوائق .......... تقف في طريق .......... المستقبل.", options: ["الماضي - بناء", "الفشل - ضياع", "اليأس - رؤية", "العقبات - نجاح"], answer: "الماضي - بناء" },
+        { question: "6. إذا رددت الإساءة بـ.......... صرت تابعاً؛ لأن عدوك ألزمك بـ..........", options: ["ب- مثلها - أخلاقه", "أ- الإحسان - أسلوبه", "ج- السوء - فعله", "د- الغضب - طباعه"], answer: "ب- مثلها - أخلاقه" },
+        { question: "7. الأب المربي هو الذي يجمع بين .......... في المعاملة و .......... في النصيحة.", options: ["الحزم - الرفق", "الشدة - القوة", "اللين - الصمت", "العطاء - المن"], answer: "الحزم - الرفق" },
+        { question: "8. إن الأهداف .......... تتحقق بـ .......... المستمر.", options: ["العظيمة - الجهد", "الصعبة - الوقت", "البعيدة - التمني", "السهلة - العمل"], answer: "العظيمة - الجهد" },
+        { question: "9. الشخص .......... هو الذي يرى .......... في كل مشكلة.", options: ["المتفائل - الفرصة", "الذكي - الحل", "المتشائم - العائق", "الحكيم - الدرس"], answer: "المتفائل - الفرصة" },
+        { question: "10. تكمن .......... في القول، و .......... في الفعل.", options: ["البلاغة - الحكمة", "الفصاحة - القوة", "المعرفة - الخبرة", "السرعة - الإتقان"], answer: "البلاغة - الحكمة" },
+        { question: "11. العدو .......... هو أسلم من العدو الذي.... عدوانيته", options: ["أ- الظاهر - يخفي", "ب- القوي - يظهر", "ج- القريب - يبدي", "د- الماكر - يسر"], answer: "أ- الظاهر - يخفي" },
+        { question: "12. الطموح .......... ينمو بالعمل، و .......... يذبل بالتواكل.", options: ["الحي - الميت", "الكبير - الصغير", "الصادق - الكاذب", "الدائم - المؤقت"], answer: "الحي - الميت" },
+        { question: "13. معرفة كيفية .......... الآخرين يمكننا من .......... سلوكياتهم المختلفة عنا.", options: ["أ- تفكير - تقبل", "ب- تعامل - رفض", "ج- عيش - فهم", "د- حديث - تغيير"], answer: "أ- تفكير - تقبل" },
+        { question: "14. لابد من تذليل .......... للوصول إلى .......... المنشودة.", options: ["الصعاب - الغايات", "الطرق - الأهداف", "العقبات - النجاحات", "المهام - النتائج"], answer: "الصعاب - الغايات" },
+        { question: "15. من لا يثبت على رأي كالصحيفة ويكون عرضة .......... وفريسة لآراء الآخرين وهدفاً يمكن .......... به.", options: ["أ- التردد - الإيقاع", "ب- الظفر - الفوز", "ج- النقد - المساس", "د- السخرية - اللعب"], answer: "أ- التردد - الإيقاع" },
+        { question: "16. إن القلق يستهلك .......... الكبيرة، ويؤدي إلى .......... في الإنتاج.", options: ["الطاقة - ضعف", "الوقت - زيادة", "المال - نقص", "الجهد - توقف"], answer: "الطاقة - ضعف" },
+        { question: "17. الشقي من جمع المال .......... وبخل على ..........", options: ["ب- لغيره - نفسه", "أ- لورثته - حاله", "ج- لكثرته - عياله", "د- لنفسه - غيره"], answer: "ب- لغيره - نفسه" },
+        { question: "18. الصدق .......... المنجية، والكذب .......... المهلكة.", options: ["السفينة - الغرق", "الطريق - الحفرة", "النور - الظلمة", "القوة - الضعف"], answer: "السفينة - الغرق" },
+        { question: "19. الجسر بين الأحلام و.......... هو ..........", options: ["أ- الواقع - العمل", "ب- النجاح - التعب", "ج- الحقيقة - الإصرار", "د- الخيال - السعي"], answer: "أ- الواقع - العمل" },
+        { question: "20. إذا أراد المدير أن ينجح في إدارته، فعليه أن يشرك الموظفين في صنع .......... والتحفيز على ..........", options: ["القرار - الإنجاز", "العمل - الراحة", "الخطة - الكلام", "المستقبل - الصمت"], answer: "القرار - الإنجاز" }
+    ];
+
+    let currentIdx = 0, score = 0, timer, timeLeft = 45, logs = [], activeQs = [], sName = "";
+
+    function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function startQuizAction() {
+        sName = document.getElementById('studentNameInput').value;
+        if (!sName.trim()) return alert("يرجى كتابة الاسم الثلاثي");
+        activeQs = shuffle([...masterPool]); 
+        document.getElementById('current-student-display').innerText = "المتحدي: " + sName;
+        document.getElementById('start-page').classList.add('hidden');
+        document.getElementById('quiz-page').classList.remove('hidden');
+        loadQuestion();
+    }
+
+    function startTimer() {
+        clearInterval(timer); timeLeft = 45;
+        const tBox = document.getElementById('timer-box');
+        const tVal = document.getElementById('timer-val');
+        tBox.classList.remove('timer-pulse'); tVal.innerText = timeLeft;
+        timer = setInterval(() => {
+            timeLeft--; tVal.innerText = timeLeft;
+            if (timeLeft <= 5) tBox.classList.add('timer-pulse');
+            if (timeLeft <= 0) { clearInterval(timer); handleAns(null, null); }
+        }, 1000);
+    }
+
+    function loadQuestion() {
+        if (currentIdx >= activeQs.length) return endQuiz();
+        const q = activeQs[currentIdx];
+        document.getElementById('progress-text').innerText = `سؤال ${currentIdx + 1} من ${activeQs.length}`;
+        document.getElementById('question-display').innerText = q.question;
+        document.getElementById('feedback-display').style.display = 'none';
+        document.getElementById('next-btn').classList.add('hidden');
+        const box = document.getElementById('options-container'); box.innerHTML = '';
+        shuffle([...q.options]).forEach(opt => {
+            const div = document.createElement('div'); div.className = 'option'; div.innerText = opt;
+            div.onclick = () => handleAns(opt, div); box.appendChild(div);
+        });
+        startTimer();
+    }
+
+    function handleAns(sel, el) {
+        clearInterval(timer);
+        document.getElementById('timer-box').classList.remove('timer-pulse');
+        const q = activeQs[currentIdx];
+        const opts = document.querySelectorAll('.option');
+        opts.forEach(o => o.onclick = null);
+        let isCorrect = (sel === q.answer);
+        if (isCorrect) { if(el) el.classList.add('correct-opt'); score++; }
+        else { if(el) el.classList.add('wrong-opt'); opts.forEach(o => { if(o.innerText === q.answer) o.classList.add('correct-opt'); }); }
+        const fb = document.getElementById('feedback-display');
+        fb.style.display = 'block';
+        fb.innerHTML = `<strong>💡 التحليل:</strong> ${isCorrect ? 'أحسنت! إجابة دقيقة.' : 'الإجابة الصحيحة هي المحددة بالأخضر.'}<br><br><small>✨ أ / عبدالعزيز الفيفي - ثانوية الأمير عبدالمجيد 🎓</small>`;
+        document.getElementById('next-btn').classList.remove('hidden');
+        logs.push({ q: q.question, user: sel || "انتهى الوقت ⏰", correct: q.answer });
+    }
+
+    function loadNextQuestion() { currentIdx++; loadQuestion(); }
+
+    function endQuiz() {
+        document.getElementById('quiz-page').classList.add('hidden');
+        document.getElementById('result-page').classList.remove('hidden');
+        document.getElementById('score-display').innerText = `الدرجة النهائية: ${score} من ${activeQs.length}`;
+        document.getElementById('final-student-name').innerText = `اسم البطل المتحدي: ${sName}`;
+        const tbody = document.getElementById('summary-body');
+        logs.forEach(l => {
+            tbody.innerHTML += `<tr><td>${l.q}</td><td style="color:${l.user === l.correct ? 'green':'red'}">${l.user}</td><td style="color:green; font-weight:bold">${l.correct}</td></tr>`;
+        });
+    }
+</script>
+</body>
+</html>
